@@ -47,7 +47,7 @@ func (s *MemoryStore) Write(w http.ResponseWriter, r *http.Request) {
 	var wReq WriteRequest
 	err := json.NewDecoder(r.Body).Decode(&wReq)
 	if err != nil {
-		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
