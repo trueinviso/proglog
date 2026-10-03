@@ -69,15 +69,15 @@ func (s *store) Read(pos uint64) (p []byte, err error) {
 		return nil, err
 	}
 
-	data := make([]byte, enc.Uint64(size))
-	if _, err := s.File.ReadAt(data, int64(pos + lenWidth)); err != nil {
+	b := make([]byte, enc.Uint64(size))
+	if _, err := s.File.ReadAt(b, int64(pos+lenWidth)); err != nil {
 		return nil, err
 	}
 
-	return data, nil
+	return b, nil
 }
 
-func (s *store) ReadAt(b byte[], off uint64) (int, error) {
+func (s *store) ReadAt(b []byte, off int64) (int, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -85,5 +85,16 @@ func (s *store) ReadAt(b byte[], off uint64) (int, error) {
 		return 0, err
 	}
 
-	return s.File.ReadAt(b, int64(off))
+	return s.File.ReadAt(b, off)
+}
+
+func (s *store) Close() error {
+	s.mu.Lock()
+	defer s.mu.Lock()
+
+	if err := s.buf.Flush(); err != nil {
+		return err
+	}
+
+	return s.File.Close()
 }
