@@ -5,7 +5,6 @@ import (
 	"os"
 	"path"
 
-	"github.com/segmentio/encoding/proto"
 	api "github.com/trueinviso/proglog/api/v1"
 	"google.golang.org/protobuf/proto"
 )
@@ -118,9 +117,9 @@ func (s *segment) Close() error {
 	return nil
 }
 
-func (s *segment) nearestMultiple(j, k uint64) uint64 {
-	if j >= 0 {
-		return (j / k) * k
-	}
-	return ((j - k + 1) / k) * k
-}
+// func (s *segment) nearestMultiple(j, k uint64) uint64 {
+// 	if j >= 0 {
+// 		return (j / k) * k
+// 	}
+// 	return ((j - k + 1) / k) * k
+// }
