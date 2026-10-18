@@ -4,7 +4,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/tysonmote/gommap"
+	"golang.org/x/sys/unix"
 )
 
 var (
@@ -15,7 +15,7 @@ var (
 
 type index struct {
 	file *os.File
-	mmap gommap.MMap
+	mmap []byte
 	size uint64
 }
 
@@ -33,18 +33,22 @@ func newIndex(f *os.File, c Config) (*index, error) {
 	); err != nil {
 		return nil, err
 	}
-	if idx.mmap, err = gommap.Map(
-		idx.file.Fd(),
-		gommap.PROT_READ|gommap.PROT_WRITE,
-		gommap.MAP_SHARED,
-	); err != nil {
-		return nil, err
+	if c.Segment.MaxIndexBytes > 0 {
+		if idx.mmap, err = unix.Mmap(
+			int(idx.file.Fd()),
+			0,
+			int(c.Segment.MaxIndexBytes),
+			unix.PROT_READ|unix.PROT_WRITE,
+			unix.MAP_SHARED,
+		); err != nil {
+			return nil, err
+		}
 	}
 	return idx, nil
 }
 
 func (i *index) Close() error {
-	if err := i.mmap.Sync(gommap.MS_SYNC); err != nil {
+	if err := unix.Msync(i.mmap, unix.MS_SYNC); err != nil {
 		return err
 	}
 	if err := i.file.Sync(); err != nil {
